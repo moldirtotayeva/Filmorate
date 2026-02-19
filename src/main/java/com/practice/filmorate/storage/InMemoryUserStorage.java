@@ -24,6 +24,7 @@ public class InMemoryUserStorage implements UserStorage {
         if (users.containsKey(user.getId())) {
             throw new UserAlreadyExistException("User with id " + user.getId() + " already exists");
         }
+        //user.setFriends();
         validate(user);
         user.setId(uniqueId++);
         users.put(user.getId(), user);
@@ -59,6 +60,10 @@ public class InMemoryUserStorage implements UserStorage {
 
     @Override
     public Set<Long> getFriends(Long id) {
+        //Set<Long> result = new HashSet<>();
+        if(users.get(id).getFriends()==null){
+            throw new NotFoundException("getFriends()==null");//
+        }
         return users.get(id).getFriends();
     }
 

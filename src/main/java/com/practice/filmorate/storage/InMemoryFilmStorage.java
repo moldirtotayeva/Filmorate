@@ -57,7 +57,7 @@ public class InMemoryFilmStorage implements FilmStorage {
     @Override
     public Collection<Film> findPopularFilms(Integer size) {
         return films.values().stream()
-                .sorted(Comparator.comparingInt(f -> f.getLikes().size()))
+                .sorted(Comparator.comparingInt(f -> ((Film)f).getLikes().size()).reversed())
                 .limit(size)
                 .toList();
     }
