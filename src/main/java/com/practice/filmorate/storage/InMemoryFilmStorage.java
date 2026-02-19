@@ -5,12 +5,8 @@ import com.practice.filmorate.exceptions.NotFoundException;
 import com.practice.filmorate.exceptions.ValidationException;
 import com.practice.filmorate.model.Film;
 import org.springframework.stereotype.Component;
-
 import java.time.LocalDate;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 
 @Component
 public class InMemoryFilmStorage implements FilmStorage {
@@ -34,7 +30,7 @@ public class InMemoryFilmStorage implements FilmStorage {
     }
 
     @Override
-    public Optional<Film> findById(int id) {
+    public Optional<Film> findById(Long id) {
         return films.values().stream().filter(film -> film.getId() == id).findFirst();
     }
 
@@ -49,17 +45,35 @@ public class InMemoryFilmStorage implements FilmStorage {
     }
 
     @Override
+    public void addLike(Long id, Long userId) {
+        films.get(id).getLikes().add(userId);
+    }
+
+    @Override
+    public void removeLike(Long id, Long userId) {
+        films.get(id).getLikes().remove(userId);
+    }
+
+    @Override
+    public Collection<Film> findPopularFilms(Integer size) {
+        return films.values().stream()
+                .sorted(Comparator.comparingInt(f -> f.getLikes().size()))
+                .limit(size)
+                .toList();
+    }
+
+    @Override
     public void validate(Film film) {
-        if (film.getName()==null || film.getName().isBlank()) {
+        if (film.getName() == null || film.getName().isBlank()) {
             throw new ValidationException("Название фильма не может быть пустым");
         }
-        if (film.getDescription()!=null && film.getDescription().length()>200){
+        if (film.getDescription() != null && film.getDescription().length() > 200) {
             throw new ValidationException("Максимальная длина описания — 200 символов");
         }
-        if (film.getReleaseDate()!=null && film.getReleaseDate().isBefore(LocalDate.of(1895, 12, 28))){
+        if (film.getReleaseDate() != null && film.getReleaseDate().isBefore(LocalDate.of(1895, 12, 28))) {
             throw new ValidationException("Дата релиза фильма не должна быть раньше 28 декабря 1895 года");
         }
-        if (film.getDuration()!=null && film.getDuration()<0){
+        if (film.getDuration() != null && film.getDuration() < 0) {
             throw new ValidationException("Продолжительность фильма должна быть положительной");
         }
     }

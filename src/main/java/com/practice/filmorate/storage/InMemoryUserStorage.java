@@ -7,10 +7,7 @@ import com.practice.filmorate.model.User;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDate;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 
 @Component
 public class InMemoryUserStorage implements UserStorage {
@@ -34,7 +31,7 @@ public class InMemoryUserStorage implements UserStorage {
     }
 
     @Override
-    public Optional<User> findById(int id) {
+    public Optional<User> findById(Long id) {
         return users.values().stream().filter(user -> user.getId() == id).findFirst();
     }
 
@@ -46,6 +43,36 @@ public class InMemoryUserStorage implements UserStorage {
         validate(user);
         users.put(user.getId(), user);
         return user;
+    }
+
+    @Override
+    public void addFriend(Long id, Long friendId) {
+        users.get(id).getFriends().add(friendId);
+        users.get(friendId).getFriends().add(id);
+    }
+
+    @Override
+    public void deleteFriend(Long id, Long friendId) {
+        users.get(id).getFriends().remove(friendId);
+        users.get(friendId).getFriends().remove(id);
+    }
+
+    @Override
+    public Set<Long> getFriends(Long id) {
+        return users.get(id).getFriends();
+    }
+
+    @Override
+    public Set<Long> findCommonFriends(Long id, Long otherId) {
+        Set<Long> commonFriends = new HashSet<>();
+        Set<Long> friends = users.get(id).getFriends();
+        Set<Long> otherUserFriends = users.get(otherId).getFriends();
+        for(Long friendId : otherUserFriends) {
+            if(friends.contains(friendId)) {
+                commonFriends.add(friendId);
+            }
+        }
+        return commonFriends;
     }
 
     @Override
