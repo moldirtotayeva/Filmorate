@@ -24,7 +24,6 @@ public class InMemoryUserStorage implements UserStorage {
         if (users.containsKey(user.getId())) {
             throw new UserAlreadyExistException("User with id " + user.getId() + " already exists");
         }
-        //user.setFriends();
         validate(user);
         user.setId(uniqueId++);
         users.put(user.getId(), user);
@@ -59,22 +58,25 @@ public class InMemoryUserStorage implements UserStorage {
     }
 
     @Override
-    public Set<Long> getFriends(Long id) {
-        //Set<Long> result = new HashSet<>();
-        if(users.get(id).getFriends()==null){
-            throw new NotFoundException("getFriends()==null");//
+    public Set<User> getFriends(Long id) {
+        Set<User> result = new HashSet<>();
+        if(!users.containsKey(id)) {
+            throw new NotFoundException("User with id " + id + " does not exist");
         }
-        return users.get(id).getFriends();
+        for(Long friendId : users.get(id).getFriends()){
+            result.add(users.get(friendId));
+        }
+        return result;
     }
 
     @Override
-    public Set<Long> findCommonFriends(Long id, Long otherId) {
-        Set<Long> commonFriends = new HashSet<>();
+    public Set<User> findCommonFriends(Long id, Long otherId) {
+        Set<User> commonFriends = new HashSet<>();
         Set<Long> friends = users.get(id).getFriends();
         Set<Long> otherUserFriends = users.get(otherId).getFriends();
         for(Long friendId : otherUserFriends) {
             if(friends.contains(friendId)) {
-                commonFriends.add(friendId);
+                commonFriends.add(users.get(friendId));
             }
         }
         return commonFriends;

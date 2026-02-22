@@ -13,7 +13,7 @@ public interface UserStorage {
     User update(User user);
     void addFriend(Long id, Long friendId);
     void deleteFriend(Long id, Long friendId);
-    Set<Long> getFriends(Long id);
-    Set<Long> findCommonFriends(Long id, Long friendId);
+    Set<User> getFriends(Long id);
+    Set<User> findCommonFriends(Long id, Long friendId);
     void validate(User user);
 }

@@ -45,11 +45,11 @@ public class UserService {
         }
     }
 
-    public Set<Long> getFriends(Long id) {
+    public Set<User> getFriends(Long id) {
         return userStorage.getFriends(id);
     }
 
-    public Set<Long> findCommonFriends(Long id, Long otherId) {
+    public Set<User> findCommonFriends(Long id, Long otherId) {
         return userStorage.findCommonFriends(id, otherId);
     }
 

@@ -26,7 +26,4 @@ public class User {
         this.friends = new HashSet<>();
     }
 
-    public void setFriends() {
-        this.friends = new HashSet<>();
-    }
 }
