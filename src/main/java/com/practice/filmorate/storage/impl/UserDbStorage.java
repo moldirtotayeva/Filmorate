@@ -46,8 +46,8 @@ public class UserDbStorage implements UserStorage {
     }
 
     @Override
-    public User update(User user) { // не работает
-        if (findById(user.getId()).isPresent()) {
+    public User update(User user) {
+        if (!findById(user.getId()).isPresent()) {
             throw new NotFoundException("User not found");
         }
         String sql = "update users set email=?, login=?, name=?, birthday=? where id=?";
@@ -58,7 +58,13 @@ public class UserDbStorage implements UserStorage {
 
     @Override
     public void addFriend(Long id, Long friendId) {
+        Optional<User> userOpt = findById(id);
+        Optional<User> friendOpt = findById(friendId);
 
+        if (userOpt.isEmpty() || friendOpt.isEmpty()) {
+            throw new NotFoundException("User not found");
+        }
+        jdbcTemplate.update("insert into friends(user_id, friend_id) values (?, ?)",id, friendId);
     }
 
     @Override
