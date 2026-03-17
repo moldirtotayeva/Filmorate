@@ -8,7 +8,6 @@ import java.util.Set;
 
 @Getter
 @Setter
-@ToString
 @NoArgsConstructor
 public class User {
     private Long id;
@@ -16,7 +15,7 @@ public class User {
     private String login;
     private String name;
     private LocalDate birthday;
-    private Set<Long> friends;
+    private Set<User> friends;
 
     public User(String email, String login, String name, LocalDate birthday) {
         this.email = email;
@@ -26,4 +25,20 @@ public class User {
         this.friends = new HashSet<>();
     }
 
+    public User(Long id, String email, String login, String name, LocalDate birthday, Set<User> friends) {
+        this.id = id;
+        this.email = email;
+        this.login = login;
+        this.name = name;
+        this.birthday = birthday;
+        this.friends = friends;
+    }
+
+    public User(Long id, String email, String login, String name, LocalDate birthday) {
+        this.id = id;
+        this.email = email;
+        this.login = login;
+        this.name = name;
+        this.birthday = birthday;
+    }
 }
