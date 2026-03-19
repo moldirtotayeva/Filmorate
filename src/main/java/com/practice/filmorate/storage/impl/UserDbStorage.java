@@ -1,16 +1,19 @@
 package com.practice.filmorate.storage.impl;
 
 import com.practice.filmorate.exceptions.NotFoundException;
+import com.practice.filmorate.exceptions.ValidationException;
 import com.practice.filmorate.model.User;
 import com.practice.filmorate.storage.UserStorage;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Primary;
+import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.simple.SimpleJdbcInsert;
 import org.springframework.stereotype.Component;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.time.LocalDate;
 import java.util.*;
 
 @Component
@@ -25,6 +28,7 @@ public class UserDbStorage implements UserStorage {
 
     @Override
     public User create(User user) {
+        validate(user); //?
         SimpleJdbcInsert insert = new SimpleJdbcInsert(jdbcTemplate)
                 .withTableName("users")
                 .usingGeneratedKeyColumns("id");
@@ -41,13 +45,21 @@ public class UserDbStorage implements UserStorage {
 
     @Override
     public Optional<User> findById(Long id) {
+//        String sql = "select * from users where id=?";
+//        return Optional.ofNullable(jdbcTemplate.queryForObject(sql, UserDbStorage::userMapRow, id));
         String sql = "select * from users where id=?";
-        return Optional.ofNullable(jdbcTemplate.queryForObject(sql, UserDbStorage::userMapRow, id));
+        try {
+            return Optional.ofNullable(
+                    jdbcTemplate.queryForObject(sql, UserDbStorage::userMapRow, id)
+            );
+        } catch (EmptyResultDataAccessException e) {
+            return Optional.empty();
+        }
     }
 
     @Override
     public User update(User user) {
-        if (!findById(user.getId()).isPresent()) {
+        if (findById(user.getId()).isEmpty()) {
             throw new NotFoundException("User not found");
         }
         String sql = "update users set email=?, login=?, name=?, birthday=? where id=?";
@@ -69,13 +81,26 @@ public class UserDbStorage implements UserStorage {
 
     @Override
     public void deleteFriend(Long id, Long friendId) {
-        if (findById(id).isEmpty() || findById(friendId).isEmpty()) {
-            throw new NotFoundException("User not found");
+//        Optional<User> user = findById(id);
+//        Optional<User> friend = findById(friendId);
+//
+//        if (user.isEmpty() || friend.isEmpty()) {
+//            throw new NotFoundException("User not found");
+//        }
+//        String sql = "delete from friends where user_id=? and friend_id=?";
+//        int rows = jdbcTemplate.update(sql, id, friendId);
+//        if (rows == 0) {
+//            throw new NotFoundException("Friendship not found");
+//        }
+        if (id.equals(friendId)) {
+            throw new ValidationException("Invalid friend id");
         }
         String sql = "delete from friends where user_id=? and friend_id=?";
         int rows = jdbcTemplate.update(sql, id, friendId);
         if (rows == 0) {
-            throw new NotFoundException("Friendship not found");
+            if (findById(id).isEmpty() || findById(friendId).isEmpty()) {
+                throw new NotFoundException("User not found");
+            }
         }
     }
 
@@ -99,6 +124,18 @@ public class UserDbStorage implements UserStorage {
 
     @Override
     public void validate(User user) {
+        if (user.getEmail()==null || user.getEmail().isBlank() || !(user.getEmail().contains("@"))){
+            throw new ValidationException("Электронная почта не может быть пустой и должна содержать символ @");
+        }
+        if (user.getLogin()==null || user.getLogin().isBlank()){
+            throw new ValidationException("Логин не может быть пустым и содержать пробелы");
+        }
+        if (user.getName()==null || user.getName().isBlank()){
+            user.setName(user.getLogin());
+        }
+        if(user.getBirthday()!=null && user.getBirthday().isAfter(LocalDate.now())){
+            throw new ValidationException("Дата рождения не может быть в будущем");
+        }
 
     }
 
