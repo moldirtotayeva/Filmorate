@@ -17,7 +17,7 @@ CREATE TABLE IF NOT EXISTS users (
 
 
 create table friends (
-    user_id bigint references users(id) not null,
-    friend_id bigint references users(id) not null ,
+    user_id bigint references users(id) ON DELETE CASCADE not null ,
+    friend_id bigint references users(id) ON DELETE CASCADE not null ,
     primary key (user_id, friend_id)
 );

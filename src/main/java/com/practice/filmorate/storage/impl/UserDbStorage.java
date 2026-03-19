@@ -69,12 +69,27 @@ public class UserDbStorage implements UserStorage {
 
     @Override
     public void deleteFriend(Long id, Long friendId) {
-
+        if (findById(id).isEmpty() || findById(friendId).isEmpty()) {
+            throw new NotFoundException("User not found");
+        }
+        String sql = "delete from friends where user_id=? and friend_id=?";
+        int rows = jdbcTemplate.update(sql, id, friendId);
+        if (rows == 0) {
+            throw new NotFoundException("Friendship not found");
+        }
     }
 
     @Override
     public Set<User> getFriends(Long id) {
-        return Set.of();
+        if (findById(id).isEmpty()) {
+            throw new NotFoundException("User not found");
+        }
+        String sql = "SELECT * FROM users WHERE id IN (" +
+                "SELECT friend_id FROM friends WHERE user_id = ?)";
+
+        return new HashSet<>(
+                jdbcTemplate.query(sql, UserDbStorage::userMapRow, id)
+        );
     }
 
     @Override
