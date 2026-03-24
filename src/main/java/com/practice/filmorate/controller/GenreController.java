@@ -15,11 +15,12 @@ public class GenreController {
 
     @GetMapping
     public Collection<Genre> getAllGenres(){
-        return genreService.findAllGenre();
+        return genreService.getAllGenre();
     }
 
-    @PostMapping("/genre")
-    public Genre createGenre(@RequestBody Genre genre){
-       return genreService.create(genre);
+    @GetMapping("/{id}")
+    public Genre getGenreById(@PathVariable Integer id){
+        return genreService.getGenreById(id);
     }
+
 }

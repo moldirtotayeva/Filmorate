@@ -28,7 +28,7 @@ public class UserDbStorage implements UserStorage {
 
     @Override
     public User create(User user) {
-        validate(user); //?
+        validate(user);
         SimpleJdbcInsert insert = new SimpleJdbcInsert(jdbcTemplate)
                 .withTableName("users")
                 .usingGeneratedKeyColumns("id");
@@ -45,8 +45,6 @@ public class UserDbStorage implements UserStorage {
 
     @Override
     public Optional<User> findById(Long id) {
-//        String sql = "select * from users where id=?";
-//        return Optional.ofNullable(jdbcTemplate.queryForObject(sql, UserDbStorage::userMapRow, id));
         String sql = "select * from users where id=?";
         try {
             return Optional.ofNullable(
@@ -81,17 +79,6 @@ public class UserDbStorage implements UserStorage {
 
     @Override
     public void deleteFriend(Long id, Long friendId) {
-//        Optional<User> user = findById(id);
-//        Optional<User> friend = findById(friendId);
-//
-//        if (user.isEmpty() || friend.isEmpty()) {
-//            throw new NotFoundException("User not found");
-//        }
-//        String sql = "delete from friends where user_id=? and friend_id=?";
-//        int rows = jdbcTemplate.update(sql, id, friendId);
-//        if (rows == 0) {
-//            throw new NotFoundException("Friendship not found");
-//        }
         if (id.equals(friendId)) {
             throw new ValidationException("Invalid friend id");
         }
@@ -119,7 +106,19 @@ public class UserDbStorage implements UserStorage {
 
     @Override
     public Set<User> findCommonFriends(Long id, Long friendId) {
-        return Set.of();
+        if (id.equals(friendId)) {
+            throw new ValidationException("Users must be different");
+        }
+        if (findById(id).isEmpty() || findById(friendId).isEmpty()) {
+            throw new NotFoundException("User not found");
+        }
+        String sql = "select * from users where id in " +
+                "(select friend_id from friends where user_id=?)" +
+                "and id in(select friend_id from friends where user_id=?)";
+
+        return new HashSet<>(
+                jdbcTemplate.query(sql, UserDbStorage::userMapRow, id, friendId)
+        );
     }
 
     @Override
